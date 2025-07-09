@@ -1,0 +1,12 @@
+{
+  "name": "email-sending-service",
+  "version": "1.0.0",
+  "description": "A resilient email sending service in JavaScript",
+  "license": "ISC",
+  "author": "Ashish Mehta",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  }
+}
