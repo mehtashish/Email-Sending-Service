@@ -3,7 +3,7 @@ class Provider1 {
     if (Math.random() < 0.6) {
       return true;
     } else {
-      throw new Error("First provider failed.");
+      throw new Error("Email Provider 1 failed!");
     }
   }
 }
