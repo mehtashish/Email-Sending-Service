@@ -6,6 +6,12 @@ class EmailService {
     this.primaryProvider = new firstProvider();
     this.fallbackProvider = new secondProvider();
     this.idempotencyCheck = new Set();
+    this.emailsPerWindow = 3;
+    this.windowSize = 3 * 1000;
+    this.rateLimit = {
+      count: 0,
+      windowStart: Date.now(),
+    };
   }
 
   async sendEmail(email) {
@@ -17,6 +23,22 @@ class EmailService {
         info: "Duplicate email",
       };
     }
+
+    const now = Date.now();
+    if (now - this.rateLimit.windowStart >= this.windowSize) {
+      this.rateLimit.windowStart = now;
+      this.rateLimit.count = 0;
+    }
+    if (this.rateLimit.count >= this.emailsPerWindow) {
+      console.log("Rate limit exceeded! Try after some time.");
+      return {
+        success: false,
+        provider: null,
+        error: "Rate limit exceeded",
+      };
+    }
+
+    this.rateLimit.count++;
 
     let result = {
       success: false,
