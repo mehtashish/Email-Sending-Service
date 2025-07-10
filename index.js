@@ -32,5 +32,9 @@ const EmailService = require("./src/EmailService");
 
     const result = await service.sendEmail(email);
     console.log(`Attempt ${i + 1}:`, result);
+    console.log();
   }
+
+  console.log("\n ----- Status Log -----");
+  console.log(service.getStatusLog());
 })();
