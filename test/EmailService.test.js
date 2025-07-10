@@ -97,4 +97,18 @@ describe("EmailService tests", () => {
     expect(res.success).toBe(true);
     expect(res.provider).toBe("Second email provider");
   });
+
+  test("should record status logs correctly", async () => {
+    const email = {
+      id: "8",
+      to: "test8@example.com",
+      subject: "Test 8",
+      body: "This is a test email.",
+    };
+    await service.sendEmail(email);
+    const logs = service.getStatusLog();
+    expect(logs.length).toBeGreaterThan(0);
+    expect(logs[0].emailId).toBe("8");
+    expect(logs[0].success).toBe(true);
+  });
 });
