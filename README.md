@@ -41,7 +41,7 @@
 
 ---
 
-## 🛠 Setup & Installation
+## 🚀 Run locally
 
 1️⃣ **Clone the repository**
 ```bash
@@ -65,7 +65,30 @@ npm start
 -Sends email(s)
 - Shows console logs and results
 
-✅ **Running Unit Tests**
+🔲 *Server will run at:*
+[http://localhost:3000](http://localhost:3000)
+
+---
+
+## 🧪 API Endpoints
+- POST /email
+  - Send an email.
+  - Request body:
+  ```json
+  {
+  "id": "1",
+  "to": "test@example.com",
+  "subject": "Testing",
+  "body": "This is a test email."
+  }
+  ```
+
+- 📊 **GET /status**
+  - View status logs (history of all send attempts, provider used, success/failure, timestamp).
+
+---
+
+## ✅ Running Unit Tests
 - Run tests:
 ```bash
 npm test
@@ -74,6 +97,23 @@ npm test
 *Uses Jest to:*
 - Mock providers (simulate sending)
 - Test key features: send, retry, fallback, idempotency, rate limiting, status tracking
+
+---
+
+## ✅ Deployed live on Render  
+> **API Base URL:**  
+> [https://email-sending-service-28gk.onrender.com](https://email-sending-service-28gk.onrender.com)
+
+---
+
+## 🧪 How to test features
+
+| Feature        | How to test |
+|----------------|-------------|
+| Retry & fallback | Temporarily force `Provider1` to fail → POST /email and see it switch to `Provider2` |
+| Idempotency | Send same email twice (same `id`) → second time returns `{ success: false, info: "Duplicate email" }` |
+| Rate limiting | Send >3 emails quickly → see `{ success: false, error: "Rate limit exceeded" }` |
+| Status tracking | GET `/status` → see list of all attempts with timestamp, success, provider |
 
 ---
 
