@@ -24,32 +24,42 @@ class EmailService {
       error: null,
     };
 
+    let retries = 0;
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    for (retries = 0; retries < 2; retries++) {
+      try {
+        await this.primaryProvider.send(email);
+        console.log(`Email sent using first provider to ${email.to}.`);
+        result = {
+          success: true,
+          provider: "First email provider",
+          error: null,
+        };
+        this.idempotencyCheck.add(email.id);
+        return result;
+      } catch (err) {
+        console.log(`Retry attempt ${retries + 1} failed on provider 1..`);
+        await sleep(1000 * Math.pow(2, retries));
+      }
+    }
     try {
-      await this.primaryProvider.send(email);
-      console.log(`Email sent using first provider to ${email.to}.`);
+      await this.fallbackProvider.send(email);
+      console.log(`Email sent using second provider to ${email.to}.`);
       result = {
         success: true,
-        provider: "First email provider",
+        provider: "Second email provider",
         error: null,
       };
     } catch (err) {
       console.error(`${err.message}`);
-      try {
-        await this.fallbackProvider.send(email);
-        console.log(`Email sent using second provider to ${email.to}.`);
-        result = {
-          success: true,
-          provider: "Second email provider",
-          error: null,
-        };
-      } catch (err) {
-        console.error(`${err.message}`);
-        result = {
-          success: false,
-          provider: null,
-          error: "Both email providers failed!",
-        };
-      }
+      result = {
+        success: false,
+        provider: null,
+        error: "Both email providers failed!",
+      };
     }
 
     this.idempotencyCheck.add(email.id);
