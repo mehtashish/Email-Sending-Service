@@ -78,4 +78,23 @@ describe("EmailService tests", () => {
     expect(res.success).toBe(false);
     expect(res.error).toBe("Rate limit exceeded");
   });
+
+  test("should use fallback provider if first provider fails", async () => {
+    // Override Provider1 to always fail in this test
+    const Provider1 = require("../src/Provider1");
+    Provider1.mockImplementation(() => ({
+      send: jest.fn().mockRejectedValue(new Error("Provider1 failed")),
+    }));
+
+    service = new EmailService();
+    const email = {
+      id: "7",
+      to: "test7@example.com",
+      subject: "Test 7",
+      body: "This is a test email.",
+    };
+    const res = await service.sendEmail(email);
+    expect(res.success).toBe(true);
+    expect(res.provider).toBe("Second email provider");
+  });
 });
