@@ -5,13 +5,29 @@ class EmailService {
   constructor() {
     this.primaryProvider = new firstProvider();
     this.fallbackProvider = new secondProvider();
+    this.idempotencyCheck = new Set();
   }
 
   async sendEmail(email) {
+    if (this.idempotencyCheck.has(email.id)) {
+      console.log("Email already sent!");
+      return {
+        success: false,
+        provider: null,
+        info: "Duplicate email",
+      };
+    }
+
+    let result = {
+      success: false,
+      provider: null,
+      error: null,
+    };
+
     try {
       await this.primaryProvider.send(email);
       console.log(`Email sent using first provider to ${email.to}.`);
-      return {
+      result = {
         success: true,
         provider: "First email provider",
         error: null,
@@ -21,20 +37,23 @@ class EmailService {
       try {
         await this.fallbackProvider.send(email);
         console.log(`Email sent using second provider to ${email.to}.`);
-        return {
+        result = {
           success: true,
           provider: "Second email provider",
           error: null,
         };
       } catch (err) {
         console.error(`${err.message}`);
-        return {
+        result = {
           success: false,
           provider: null,
           error: "Both email providers failed!",
         };
       }
     }
+
+    this.idempotencyCheck.add(email.id);
+    return result;
   }
 }
 
