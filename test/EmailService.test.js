@@ -1,0 +1,45 @@
+const EmailService = require("../src/EmailService");
+
+jest.mock("../src/Provider1", () => {
+  return jest.fn().mockImplementation(() => ({
+    send: jest.fn().mockResolvedValue("Sent by Provider1"),
+  }));
+});
+jest.mock("../src/Provider2", () => {
+  return jest.fn().mockImplementation(() => ({
+    send: jest.fn().mockResolvedValue("Sent by Provider2"),
+  }));
+});
+
+describe("EmailService tests", () => {
+  let service;
+
+  beforeEach(() => {
+    service = new EmailService();
+  });
+
+  test("should send email successfully with first provider", async () => {
+    const email = {
+      id: "1",
+      to: "test1@example.com",
+      subject: "Test 1",
+      body: "This is a test email.",
+    };
+    const res = await service.sendEmail(email);
+    expect(res.success).toBe(true);
+    expect(res.provider).toBe("First email provider");
+  });
+
+  test("should block duplicate email by idempotency", async () => {
+    const email = {
+      id: "2",
+      to: "test2@example.com",
+      subject: "Test 2",
+      body: "This is a test email.",
+    };
+    await service.sendEmail(email); // first time, sends
+    const res = await service.sendEmail(email); // second time will block
+    expect(res.success).toBe(false);
+    expect(res.info).toBe("Duplicate email");
+  });
+});
