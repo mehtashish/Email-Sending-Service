@@ -42,4 +42,40 @@ describe("EmailService tests", () => {
     expect(res.success).toBe(false);
     expect(res.info).toBe("Duplicate email");
   });
+
+  test("should block emails after rate limit exceeded", async () => {
+    // default rate limit: 3 emails per window
+    const emails = [
+      {
+        id: "3",
+        to: "test3@example.com",
+        subject: "Test 3",
+        body: "This is a test email.",
+      },
+      {
+        id: "4",
+        to: "test4@example.com",
+        subject: "Test 4",
+        body: "This is a test email.",
+      },
+      {
+        id: "5",
+        to: "test5@example.com",
+        subject: "Test 5",
+        body: "This is a test email.",
+      },
+      {
+        id: "6",
+        to: "test6@example.com",
+        subject: "Test 6",
+        body: "This is a test email.",
+      },
+    ];
+    await service.sendEmail(emails[0]);
+    await service.sendEmail(emails[1]);
+    await service.sendEmail(emails[2]);
+    const res = await service.sendEmail(emails[3]); // should exceed rate limit
+    expect(res.success).toBe(false);
+    expect(res.error).toBe("Rate limit exceeded");
+  });
 });
