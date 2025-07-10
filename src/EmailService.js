@@ -12,11 +12,24 @@ class EmailService {
       count: 0,
       windowStart: Date.now(),
     };
+    this.statusLog = [];
+  }
+
+  // to get all status logs
+  getStatusLog() {
+    return this.statusLog;
   }
 
   async sendEmail(email) {
     if (this.idempotencyCheck.has(email.id)) {
       console.log("Email already sent!");
+      this.statusLog.push({
+        emailId: email.id,
+        time: new Date(),
+        success: false,
+        provider: null,
+        error: "Duplicate email",
+      });
       return {
         success: false,
         provider: null,
@@ -31,6 +44,13 @@ class EmailService {
     }
     if (this.rateLimit.count >= this.emailsPerWindow) {
       console.log("Rate limit exceeded! Try after some time.");
+      this.statusLog.push({
+        emailId: email.id,
+        time: new Date(),
+        success: false,
+        provider: null,
+        error: "Rate limit exceeded",
+      });
       return {
         success: false,
         provider: null,
@@ -60,6 +80,13 @@ class EmailService {
           provider: "First email provider",
           error: null,
         };
+        this.statusLog.push({
+          emailId: email.id,
+          time: new Date(),
+          success: true,
+          provider: "First email provider",
+          error: null,
+        });
         this.idempotencyCheck.add(email.id);
         return result;
       } catch (err) {
@@ -75,6 +102,13 @@ class EmailService {
         provider: "Second email provider",
         error: null,
       };
+      this.statusLog.push({
+        emailId: email.id,
+        time: new Date(),
+        success: true,
+        provider: "Second email provider",
+        error: null,
+      });
     } catch (err) {
       console.error(`${err.message}`);
       result = {
@@ -82,6 +116,13 @@ class EmailService {
         provider: null,
         error: "Both email providers failed!",
       };
+      this.statusLog.push({
+        emailId: email.id,
+        time: new Date(),
+        success: false,
+        provider: null,
+        error: "Both email providers failed!",
+      });
     }
 
     this.idempotencyCheck.add(email.id);
